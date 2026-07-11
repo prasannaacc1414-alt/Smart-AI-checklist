@@ -485,4 +485,8 @@ async function startViteDev() {
   });
 }
 
-startViteDev();
+if (!process.env.VERCEL) {
+  startViteDev();
+}
+
+export default app;

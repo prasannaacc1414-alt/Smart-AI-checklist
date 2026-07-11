@@ -61,10 +61,14 @@ export default function WorkspaceHeader({
           </div>
 
           {/* Profile Avatar / logout */}
-          <div id="user-profile-controls" className="flex items-center gap-3">
-            <div className="hidden md:flex flex-col items-end text-right">
-              <span className="text-xs font-semibold text-slate-700">{user.displayName || 'App User'}</span>
-              <span className="text-[10px] text-slate-400 truncate max-w-[150px] font-mono">{user.email}</span>
+          <div id="user-profile-controls" className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
+            <div className="hidden min-[400px]:flex flex-col items-end text-right min-w-0 shrink">
+              <span className="text-xs font-semibold text-slate-700 truncate w-full max-w-[70px] min-[480px]:max-w-[110px] sm:max-w-[180px] md:max-w-[240px]">
+                {user.displayName || 'App User'}
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono truncate w-full max-w-[70px] min-[480px]:max-w-[110px] sm:max-w-[180px] md:max-w-[240px]">
+                {user.email}
+              </span>
             </div>
             {user.photoURL ? (
               <img
