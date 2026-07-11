@@ -41,6 +41,11 @@ export default function App() {
       setGoogleToken(session.token);
       setSpreadsheetId(session.spreadsheetId);
       setSessionTimeRemaining(session.timeRemainingSeconds);
+      setUser({
+        displayName: session.userEmail ? session.userEmail.split('@')[0] : 'App User',
+        email: session.userEmail || 'user@example.com',
+        photoURL: null,
+      } as any);
       setCurrentScreen('workspace');
     }
   }, []);
@@ -67,6 +72,13 @@ export default function App() {
           if (currentScreen === 'workspace') {
             setCurrentScreen('home');
           }
+        } else {
+          // Keep/restore fallback user details using session metadata
+          setUser((prev) => prev || ({
+            displayName: session.userEmail ? session.userEmail.split('@')[0] : 'App User',
+            email: session.userEmail || 'user@example.com',
+            photoURL: null,
+          } as any));
         }
       }
     );
@@ -115,16 +127,26 @@ export default function App() {
   const initializeSpreadsheet = async (token: string, currentUserEmail: string) => {
     setIsLoadingTasks(true);
     try {
-      const res = await fetch('/api/sheets/init', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      let data;
+      try {
+        const res = await fetch('/api/sheets/init', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      if (!res.ok) {
-        throw new Error(await res.text());
+        if (res.ok) {
+          data = await res.json();
+        } else {
+          console.warn('Server sheet init returned non-ok, trying client-side fallback...');
+          const { initSpreadsheetClientSide } = await import('./lib/googleSheetsFallback');
+          data = await initSpreadsheetClientSide(token);
+        }
+      } catch (err) {
+        console.warn('Server sheet init failed, trying client-side fallback...', err);
+        const { initSpreadsheetClientSide } = await import('./lib/googleSheetsFallback');
+        data = await initSpreadsheetClientSide(token);
       }
 
-      const data = await res.json();
-      if (data.spreadsheetId) {
+      if (data && data.spreadsheetId) {
         setSpreadsheetId(data.spreadsheetId);
         // Save secure encrypted session on success
         saveSecureSession(token, data.spreadsheetId, currentUserEmail);
@@ -141,15 +163,24 @@ export default function App() {
   const fetchTasks = async (token: string, sheetId: string) => {
     setIsLoadingTasks(true);
     try {
-      const res = await fetch(`/api/tasks?spreadsheetId=${sheetId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      let data;
+      try {
+        const res = await fetch(`/api/tasks?spreadsheetId=${sheetId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      if (!res.ok) {
-        throw new Error(await res.text());
+        if (res.ok) {
+          data = await res.json();
+        } else {
+          console.warn('Server fetch tasks returned non-ok, trying client-side fallback...');
+          const { fetchTasksClientSide } = await import('./lib/googleSheetsFallback');
+          data = await fetchTasksClientSide(token, sheetId);
+        }
+      } catch (err) {
+        console.warn('Server fetch tasks failed, trying client-side fallback...', err);
+        const { fetchTasksClientSide } = await import('./lib/googleSheetsFallback');
+        data = await fetchTasksClientSide(token, sheetId);
       }
-
-      const data = await res.json();
       setTasks(data);
     } catch (err: any) {
       console.error('Fetch tasks failed:', err);
@@ -185,25 +216,35 @@ export default function App() {
     const timeStr = now.toTimeString().split(' ')[0]; // HH:MM:SS
 
     try {
-      const res = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${googleToken}`,
-        },
-        body: JSON.stringify({
-          spreadsheetId,
-          description,
-          date: dateStr,
-          timestamp: timeStr,
-        }),
-      });
+      let newTask;
+      try {
+        const res = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${googleToken}`,
+          },
+          body: JSON.stringify({
+            spreadsheetId,
+            description,
+            date: dateStr,
+            timestamp: timeStr,
+          }),
+        });
 
-      if (!res.ok) {
-        throw new Error(await res.text());
+        if (res.ok) {
+          newTask = await res.json();
+        } else {
+          console.warn('Server add task returned non-ok, trying client-side fallback...');
+          const { addTaskClientSide } = await import('./lib/googleSheetsFallback');
+          newTask = await addTaskClientSide(googleToken, spreadsheetId, description, dateStr, timeStr);
+        }
+      } catch (err) {
+        console.warn('Server add task failed, trying client-side fallback...', err);
+        const { addTaskClientSide } = await import('./lib/googleSheetsFallback');
+        newTask = await addTaskClientSide(googleToken, spreadsheetId, description, dateStr, timeStr);
       }
 
-      const newTask = await res.json();
       setTasks((prev) => [newTask, ...prev]);
     } catch (err: any) {
       console.error('Add task failed:', err);
@@ -228,22 +269,30 @@ export default function App() {
     const lastUpdated = `${dateStr} ${timeStr}`;
 
     try {
-      const res = await fetch('/api/tasks', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${googleToken}`,
-        },
-        body: JSON.stringify({
-          spreadsheetId,
-          taskId,
-          status: nextStatus,
-          lastUpdated,
-        }),
-      });
+      try {
+        const res = await fetch('/api/tasks', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${googleToken}`,
+          },
+          body: JSON.stringify({
+            spreadsheetId,
+            taskId,
+            status: nextStatus,
+            lastUpdated,
+          }),
+        });
 
-      if (!res.ok) {
-        throw new Error(await res.text());
+        if (!res.ok) {
+          console.warn('Server update task returned non-ok, trying client-side fallback...');
+          const { updateTaskStatusClientSide } = await import('./lib/googleSheetsFallback');
+          await updateTaskStatusClientSide(googleToken, spreadsheetId, taskId, nextStatus, lastUpdated);
+        }
+      } catch (err) {
+        console.warn('Server update task failed, trying client-side fallback...', err);
+        const { updateTaskStatusClientSide } = await import('./lib/googleSheetsFallback');
+        await updateTaskStatusClientSide(googleToken, spreadsheetId, taskId, nextStatus, lastUpdated);
       }
     } catch (err: any) {
       console.error('Update task status failed:', err);

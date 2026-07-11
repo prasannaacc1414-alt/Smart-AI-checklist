@@ -8,6 +8,8 @@ interface HomepageProps {
 }
 
 export default function Homepage({ onSignIn, onNavigate, isLoggedIn }: HomepageProps) {
+  const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+
   return (
     <div id="homepage-landing-screen" className="min-h-screen bg-slate-50 flex flex-col font-sans relative overflow-hidden">
       {/* Background visual graphics */}
@@ -67,6 +69,19 @@ export default function Homepage({ onSignIn, onNavigate, isLoggedIn }: HomepageP
 
       {/* Hero Core Content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-12 md:py-20 flex flex-col items-center text-center justify-center space-y-12">
+        {isIframe && (
+          <div className="w-full max-w-2xl bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-4 text-xs text-left flex items-start gap-3 shadow-sm animate-pulse">
+            <span className="text-base shrink-0">⚠️</span>
+            <div>
+              <p className="font-semibold text-amber-900 mb-1">Browser Preview Sandbox active</p>
+              <p className="leading-relaxed">
+                You are currently viewing this app inside an embedded preview iframe. Due to standard browser security policies on third-party cookies and popups, Google Sign-In and Sheet syncing may be restricted here.
+                For a seamless secure login and full Google Sheets synchronization, please <strong>Open in New Tab</strong> using the arrow icon at the top right of the preview header!
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4 max-w-3xl">
           {/* Custom Crafted AI Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-100 rounded-full text-blue-700 text-[11px] font-bold tracking-wide uppercase font-mono shadow-sm">
