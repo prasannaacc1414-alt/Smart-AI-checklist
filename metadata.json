@@ -1,0 +1,6 @@
+{
+  "name": "Smart AI Checklist",
+  "description": "An AI-Interactive Smart Checklist Web App that integrates with Google Sheets as a database and uses Gemini for smart task querying.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
