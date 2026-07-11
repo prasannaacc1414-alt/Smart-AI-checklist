@@ -28,6 +28,7 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const [isAddingTask, setIsAddingTask] = useState(false);
+  const [tasksError, setTasksError] = useState<string | null>(null);
 
   // AI Chat State
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -141,6 +142,7 @@ export default function App() {
   // Create or initialize Google Spreadsheet
   const initializeSpreadsheet = async (token: string, currentUserEmail: string) => {
     setIsLoadingTasks(true);
+    setTasksError(null);
     try {
       let data;
       try {
@@ -169,6 +171,7 @@ export default function App() {
       }
     } catch (err: any) {
       console.error('Spreadsheet Init Failed:', err);
+      setTasksError(err.message || 'Failed to connect to Google Sheet. Your session may have expired.');
     } finally {
       setIsLoadingTasks(false);
     }
@@ -177,6 +180,7 @@ export default function App() {
   // Fetch Tasks list from Google Sheet
   const fetchTasks = async (token: string, sheetId: string) => {
     setIsLoadingTasks(true);
+    setTasksError(null);
     try {
       let data;
       try {
@@ -199,6 +203,7 @@ export default function App() {
       setTasks(data);
     } catch (err: any) {
       console.error('Fetch tasks failed:', err);
+      setTasksError(err.message || 'Failed to fetch tasks from Google Sheet. Check your internet connection or login status.');
     } finally {
       setIsLoadingTasks(false);
     }
@@ -424,6 +429,7 @@ export default function App() {
             isLoadingTasks={isLoadingTasks}
             isAddingTask={isAddingTask}
             aiError={aiError}
+            tasksError={tasksError}
             googleToken={googleToken}
             sessionTimeRemaining={sessionTimeRemaining}
             userGeminiApiKey={userGeminiApiKey}
@@ -434,6 +440,7 @@ export default function App() {
             onSendAiMessage={handleSendAiMessage}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
+            onReLogin={handleLogin}
           />
         );
       }

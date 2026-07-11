@@ -18,6 +18,7 @@ interface WorkspaceProps {
   isLoadingTasks: boolean;
   isAddingTask: boolean;
   aiError: string | null;
+  tasksError: string | null;
   googleToken: string | null;
   sessionTimeRemaining: number; // in seconds
   userGeminiApiKey: string;
@@ -28,6 +29,7 @@ interface WorkspaceProps {
   onSendAiMessage: (queryText: string) => void;
   onLogout: () => void;
   onNavigate: (screen: 'home' | 'privacy' | 'terms') => void;
+  onReLogin: () => void;
 }
 
 export default function Workspace({
@@ -39,6 +41,7 @@ export default function Workspace({
   isLoadingTasks,
   isAddingTask,
   aiError,
+  tasksError,
   sessionTimeRemaining,
   userGeminiApiKey,
   onSaveGeminiApiKey,
@@ -48,6 +51,7 @@ export default function Workspace({
   onSendAiMessage,
   onLogout,
   onNavigate,
+  onReLogin,
 }: WorkspaceProps) {
   const isTimeCritical = sessionTimeRemaining < 300; // < 5 minutes remaining
 
@@ -83,6 +87,43 @@ export default function Workspace({
           isLoadingTasks={isLoadingTasks}
           onFetchTasks={onFetchTasks}
         />
+
+        {/* Connection/Sync Error Warning Banner */}
+        {tasksError && (
+          <div className="bg-rose-50 border border-rose-200/80 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-rose-100/60 border border-rose-200 rounded-xl flex items-center justify-center text-rose-600 shrink-0 mt-0.5">
+                <ShieldAlert size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-800 text-sm">Sync Status: Failed</h3>
+                <p className="text-xs text-rose-700 font-mono mt-1">
+                  {tasksError}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  This typically occurs when the Google security token expires (standard 1-hour expiration) or when network requests are blocked. Tap "Reconnect" to renew your Google authentication securely.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0 self-end md:self-center">
+              <button
+                type="button"
+                onClick={onFetchTasks}
+                disabled={isLoadingTasks}
+                className="px-3.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 font-semibold text-xs text-slate-600 hover:text-slate-800 rounded-lg flex items-center gap-1 cursor-pointer transition-colors shadow-sm disabled:opacity-50"
+              >
+                Retry Sync
+              </button>
+              <button
+                type="button"
+                onClick={onReLogin}
+                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg flex items-center gap-1 cursor-pointer transition-colors shadow-sm shadow-blue-500/10"
+              >
+                Reconnect Account
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Dynamic Bento Dual Column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

@@ -11,18 +11,18 @@ export default function KeyGuidanceModal({ isOpen, onClose }: KeyGuidanceModalPr
 
   return (
     <div 
-      className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full max-h-[90vh] sm:max-h-[85vh] flex flex-col relative overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200"
+        className="bg-white rounded-t-3xl sm:rounded-3xl border-t sm:border border-slate-200 shadow-2xl max-w-lg w-full max-h-[85vh] sm:max-h-[80vh] flex flex-col relative overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-250"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top colorful gradient bar */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 shrink-0" />
         
         {/* Header - Fixed on top */}
-        <div className="p-5 sm:p-6 pb-4 border-b border-slate-100 flex items-center justify-between shrink-0 relative mt-1">
+        <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-slate-100 flex items-center justify-between shrink-0 relative mt-1">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 rounded-xl border border-blue-100">
               <Key size={20} className="animate-pulse" />
@@ -44,7 +44,7 @@ export default function KeyGuidanceModal({ isOpen, onClose }: KeyGuidanceModalPr
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 scrollbar-thin">
           {/* Explanatory introduction */}
           <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
             To ensure this workspace remains completely free, open-source, and secure, the AI features run on your own client-side <strong>Gemini API key</strong>. It acts as your personal passport to access Google's advanced intelligence.
