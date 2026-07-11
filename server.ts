@@ -11,15 +11,34 @@ const PORT = 3000;
 
 app.use(express.json());
 
-// Initialize server-side Gemini API client
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
+// Initialize server-side Gemini API client (fallback)
+const defaultAi = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || "fallback-dummy-key",
   httpOptions: {
     headers: {
       'User-Agent': 'aistudio-build',
     }
   }
 });
+
+function getAiClient(req: express.Request): GoogleGenAI {
+  const customKey = req.headers["x-gemini-api-key"] as string;
+  if (customKey && customKey.trim().length > 0) {
+    return new GoogleGenAI({
+      apiKey: customKey.trim(),
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  const systemKey = process.env.GEMINI_API_KEY;
+  if (!systemKey) {
+    throw new Error("Gemini API key is not configured. Please add your own Gemini API key in the App Settings to unlock the AI Assistant.");
+  }
+  return defaultAi;
+}
 
 // Helper to extract authorization token
 function getAuthToken(req: express.Request): string | null {
@@ -349,7 +368,8 @@ CRITICAL RULES:
 - If no tasks match, state that clearly and offer tips or ask if they'd like to add one.
 - Do not make up any tasks that are not in the Database. Refer only to the provided tasks list.`;
 
-    const response = await ai.models.generateContent({
+    const aiClient = getAiClient(req);
+    const response = await aiClient.models.generateContent({
       model: "gemini-3.5-flash",
       contents: query,
       config: {

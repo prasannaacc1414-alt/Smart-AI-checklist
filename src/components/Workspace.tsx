@@ -20,6 +20,8 @@ interface WorkspaceProps {
   aiError: string | null;
   googleToken: string | null;
   sessionTimeRemaining: number; // in seconds
+  userGeminiApiKey: string;
+  onSaveGeminiApiKey: (key: string) => void;
   onFetchTasks: () => void;
   onAddTask: (description: string) => void;
   onUpdateStatus: (taskId: string, nextStatus: 'Pending' | 'Completed') => void;
@@ -38,6 +40,8 @@ export default function Workspace({
   isAddingTask,
   aiError,
   sessionTimeRemaining,
+  userGeminiApiKey,
+  onSaveGeminiApiKey,
   onFetchTasks,
   onAddTask,
   onUpdateStatus,
@@ -56,6 +60,8 @@ export default function Workspace({
         sessionTimeRemaining={sessionTimeRemaining}
         onLogout={onLogout}
         onNavigate={onNavigate}
+        userGeminiApiKey={userGeminiApiKey}
+        onSaveGeminiApiKey={onSaveGeminiApiKey}
       />
 
       {/* Main Layout Grid */}
@@ -115,6 +121,8 @@ export default function Workspace({
               onSendMessage={onSendAiMessage}
               isLoading={isAiLoading}
               errorMsg={aiError}
+              userGeminiApiKey={userGeminiApiKey}
+              onSaveGeminiApiKey={onSaveGeminiApiKey}
             />
           </div>
 

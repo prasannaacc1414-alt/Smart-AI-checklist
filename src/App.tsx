@@ -34,6 +34,21 @@ export default function App() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
+  // Custom Gemini API Key State
+  const [userGeminiApiKey, setUserGeminiApiKey] = useState<string>(() => {
+    return localStorage.getItem('user_gemini_api_key') || '';
+  });
+
+  const handleSaveGeminiApiKey = (key: string) => {
+    const trimmed = key.trim();
+    setUserGeminiApiKey(trimmed);
+    if (trimmed) {
+      localStorage.setItem('user_gemini_api_key', trimmed);
+    } else {
+      localStorage.removeItem('user_gemini_api_key');
+    }
+  };
+
   // 1. Check for pre-existing secure sessions on load
   useEffect(() => {
     const session: DecryptedSession = loadSecureSession();
@@ -323,6 +338,7 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${googleToken}`,
+          'X-Gemini-API-Key': userGeminiApiKey,
         },
         body: JSON.stringify({
           spreadsheetId,
@@ -410,6 +426,8 @@ export default function App() {
             aiError={aiError}
             googleToken={googleToken}
             sessionTimeRemaining={sessionTimeRemaining}
+            userGeminiApiKey={userGeminiApiKey}
+            onSaveGeminiApiKey={handleSaveGeminiApiKey}
             onFetchTasks={() => fetchTasks(googleToken, spreadsheetId || '')}
             onAddTask={handleAddTask}
             onUpdateStatus={handleUpdateStatus}
