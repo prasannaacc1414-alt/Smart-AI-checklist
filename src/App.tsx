@@ -352,13 +352,26 @@ export default function App() {
         }),
       });
 
-      const data = await res.json();
-
+      let data: any = {};
       if (!res.ok) {
+        let errorMsg = 'Failed to query AI workspace.';
+        try {
+          const errData = await res.json();
+          errorMsg = errData.error || errorMsg;
+        } catch {
+          try {
+            const textErr = await res.text();
+            if (textErr && textErr.trim()) {
+              errorMsg = textErr.trim();
+            }
+          } catch {}
+        }
         if (res.status === 429) {
           throw new Error('Daily AI query limit reached. You can still manage and view your tasks manually below!');
         }
-        throw new Error(data.error || 'Failed to query AI workspace.');
+        throw new Error(errorMsg);
+      } else {
+        data = await res.json();
       }
 
       if (data.addedTask) {
