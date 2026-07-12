@@ -356,16 +356,19 @@ export default function App() {
       if (!res.ok) {
         let errorMsg = 'Failed to query AI workspace.';
         try {
-          const errData = await res.json();
-          errorMsg = errData.error || errorMsg;
-        } catch {
+          const rawText = await res.text();
           try {
-            const textErr = await res.text();
-            if (textErr && textErr.trim()) {
-              errorMsg = textErr.trim();
+            const parsed = JSON.parse(rawText);
+            errorMsg = parsed.error || rawText || errorMsg;
+          } catch {
+            if (rawText && rawText.trim()) {
+              errorMsg = rawText.trim();
             }
-          } catch {}
+          }
+        } catch (readErr) {
+          console.error('Failed to read response content:', readErr);
         }
+
         if (res.status === 429) {
           throw new Error('Daily AI query limit reached. You can still manage and view your tasks manually below!');
         }
