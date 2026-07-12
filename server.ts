@@ -21,22 +21,31 @@ const defaultAi = new GoogleGenAI({
 });
 
 function getAiClient(req: express.Request): GoogleGenAI {
-  const customKey = req.headers["x-gemini-api-key"] as string;
-  if (customKey && customKey.trim().length > 0) {
-    return new GoogleGenAI({
-      apiKey: customKey.trim(),
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
+  let customKey = req.headers["x-gemini-api-key"] as string;
+
+  // Normalize, trim, and filter out stringified falsy headers like "undefined" or "null"
+  if (customKey) {
+    customKey = customKey.trim();
+    if (customKey === "undefined" || customKey === "null" || customKey === "placeholder" || customKey === "") {
+      customKey = "";
+    }
   }
+
   const systemKey = process.env.GEMINI_API_KEY;
-  if (!systemKey) {
+  const activeKey = customKey || systemKey;
+
+  if (!activeKey || activeKey === "undefined" || activeKey === "null" || activeKey === "") {
     throw new Error("Gemini API key is not configured. Please add your own Gemini API key in the App Settings to unlock the AI Assistant.");
   }
-  return defaultAi;
+
+  return new GoogleGenAI({
+    apiKey: activeKey,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      }
+    }
+  });
 }
 
 // Helper to extract authorization token
@@ -464,20 +473,39 @@ It is now properly positioned in the relevant columns and rows!`;
       }
     }
 
-    return res.json({ text: response.text });
+    let textResponse = "";
+    try {
+      textResponse = response.text || "";
+    } catch {
+      textResponse = "I have completed the request.";
+    }
+
+    return res.json({ text: textResponse });
   } catch (error: any) {
     console.error("Gemini Query Error:", error);
 
-    // 429 Error Interceptor
-    const status = error.status || error.statusCode || 500;
-    const message = error.message || "";
+    const errorObj = error || {};
+    const status = errorObj.status || errorObj.statusCode || 500;
+    const message = errorObj.message || (typeof errorObj === "string" ? errorObj : "") || "Failed to query AI assistant.";
+
     if (status === 429 || message.includes("429") || message.includes("RESOURCE_EXHAUSTED")) {
       return res.status(429).json({
         error: "Daily AI query limit reached. You can still manage and view your tasks manually below!"
       });
     }
 
-    return res.status(500).json({ error: error.message || "Failed to query AI assistant." });
+    // Clean up raw JSON error messages from Google API to make them user-friendly
+    let cleanMessage = message;
+    try {
+      if (message.trim().startsWith("{") && message.trim().endsWith("}")) {
+        const parsed = JSON.parse(message);
+        cleanMessage = parsed.error?.message || cleanMessage;
+      }
+    } catch {
+      // Keep original message if parsing fails
+    }
+
+    return res.status(500).json({ error: cleanMessage });
   }
 });
 
