@@ -378,7 +378,7 @@ CRITICAL RULES:
 
     const aiClient = getAiClient(req);
     const response = await aiClient.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.1-flash-lite",
       contents: query,
       config: {
         systemInstruction,
@@ -421,8 +421,40 @@ CRITICAL RULES:
       if (call.name === "addTaskToSheet") {
         const args = call.args as { description: string; date: string; timestamp: string };
         const taskDesc = args.description;
-        const taskDate = args.date;
-        const taskTime = args.timestamp;
+        let taskDate = args.date || "";
+        let taskTime = args.timestamp || "";
+
+        // Robust normalization of date & timestamp to prevent ISO/relative formatting in spreadsheet cells
+        if (taskDate.includes("T")) {
+          const parts = taskDate.split("T");
+          taskDate = parts[0];
+          if (parts[1] && (!taskTime || taskTime === "tomorrow" || taskTime === "today")) {
+            taskTime = parts[1].substring(0, 8);
+          }
+        }
+        if (taskTime.includes("T")) {
+          const parts = taskTime.split("T");
+          if (parts[1]) {
+            taskTime = parts[1].substring(0, 8);
+          } else {
+            taskTime = parts[0].substring(0, 8);
+          }
+        }
+        taskTime = taskTime.replace("Z", "").split("+")[0].split("-")[0].trim();
+
+        // If the model output still falls back to tomorrow/today strings, fall back to current date
+        const todayStr = new Date().toISOString().split("T")[0];
+        if (taskDate.toLowerCase() === "today" || !/^\d{4}-\d{2}-\d{2}$/.test(taskDate)) {
+          taskDate = todayStr;
+        } else if (taskDate.toLowerCase() === "tomorrow") {
+          const tom = new Date();
+          tom.setDate(tom.getDate() + 1);
+          taskDate = tom.toISOString().split("T")[0];
+        }
+
+        if (taskTime.toLowerCase() === "today" || taskTime.toLowerCase() === "tomorrow" || !/^\d{2}:\d{2}(:\d{2})?$/.test(taskTime)) {
+          taskTime = new Date().toTimeString().split(" ")[0];
+        }
 
         const taskId = `task_${Math.floor(100000 + Math.random() * 900000)}`;
         const status = "Pending";
