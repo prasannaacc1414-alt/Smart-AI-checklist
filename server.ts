@@ -21,7 +21,13 @@ const defaultAi = new GoogleGenAI({
 });
 
 function getAiClient(req: express.Request): GoogleGenAI {
-  let customKey = req.headers["x-gemini-api-key"] as string;
+  const customKeyRaw = req.headers["x-gemini-api-key"];
+  let customKey = "";
+  if (Array.isArray(customKeyRaw)) {
+    customKey = customKeyRaw[0] || "";
+  } else if (typeof customKeyRaw === "string") {
+    customKey = customKeyRaw;
+  }
 
   // Normalize, trim, and filter out stringified falsy headers like "undefined" or "null"
   if (customKey) {
@@ -51,7 +57,7 @@ function getAiClient(req: express.Request): GoogleGenAI {
 // Helper to extract authorization token
 function getAuthToken(req: express.Request): string | null {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (typeof authHeader !== "string" || !authHeader.startsWith("Bearer ")) {
     return null;
   }
   return authHeader.substring(7);
@@ -518,19 +524,33 @@ It is now properly positioned in the relevant columns and rows!`;
 
     const errorObj = error || {};
     const status = errorObj.status || errorObj.statusCode || 500;
-    const message = errorObj.message || (typeof errorObj === "string" ? errorObj : "") || "Failed to query AI assistant.";
+    
+    // Convert error message to a string safely to prevent TypeErrors
+    let rawMessage = "Failed to query AI assistant.";
+    if (typeof errorObj.message === "string") {
+      rawMessage = errorObj.message;
+    } else if (typeof errorObj === "string") {
+      rawMessage = errorObj;
+    } else {
+      try {
+        rawMessage = JSON.stringify(errorObj);
+      } catch {
+        rawMessage = String(errorObj);
+      }
+    }
 
-    if (status === 429 || message.includes("429") || message.includes("RESOURCE_EXHAUSTED")) {
+    if (status === 429 || rawMessage.includes("429") || rawMessage.includes("RESOURCE_EXHAUSTED")) {
       return res.status(429).json({
         error: "Daily AI query limit reached. You can still manage and view your tasks manually below!"
       });
     }
 
     // Clean up raw JSON error messages from Google API to make them user-friendly
-    let cleanMessage = message;
+    let cleanMessage = rawMessage;
     try {
-      if (message.trim().startsWith("{") && message.trim().endsWith("}")) {
-        const parsed = JSON.parse(message);
+      const trimmed = rawMessage.trim();
+      if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+        const parsed = JSON.parse(trimmed);
         cleanMessage = parsed.error?.message || cleanMessage;
       }
     } catch {

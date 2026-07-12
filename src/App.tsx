@@ -391,12 +391,13 @@ export default function App() {
       setChatMessages((prev) => [...prev, aiMsg]);
     } catch (err: any) {
       console.error('AI Query Failed:', err);
-      setAiError(err.message || 'An error occurred during generative analysis.');
+      const errorMessage = err.message || 'An error occurred during generative analysis.';
+      setAiError(errorMessage);
 
       const errorMsgBubble: ChatMessage = {
         id: `msg_err_${Date.now()}`,
         role: 'model',
-        text: 'Apologies, I encountered a rate limit or service interruption. You can continue managing your checklist manually!',
+        text: `Error: ${errorMessage}\n\nYou can continue managing your checklist manually!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         error: true,
       };
