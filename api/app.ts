@@ -41,16 +41,6 @@ app.use((req, _res, next) => {
   next();
 });
 
-// Initialize server-side Gemini API client (fallback)
-const defaultAi = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "fallback-dummy-key",
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
-
 function getAiClient(req: express.Request): GoogleGenAI {
   const customKeyRaw = req.headers["x-gemini-api-key"];
   let customKey = "";

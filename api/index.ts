@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import app from "../app";
+import app from "./app.js";
 
 export const maxDuration = 60;
 
