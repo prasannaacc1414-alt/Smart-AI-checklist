@@ -1,6 +1,8 @@
 import React from 'react';
 import { X, Key, ExternalLink, ShieldCheck, CheckCircle, ArrowRight } from 'lucide-react';
 
+const GEMINI_API_KEY_URL = 'https://aistudio.google.com/app/apikey';
+
 interface KeyGuidanceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -57,17 +59,17 @@ export default function KeyGuidanceModal({ isOpen, onClose }: KeyGuidanceModalPr
                 1
               </div>
               <div>
-                <h4 className="font-semibold text-xs sm:text-sm text-slate-800">Visit Google AI Studio</h4>
+                <h4 className="font-semibold text-xs sm:text-sm text-slate-800">Open the Gemini API Keys page</h4>
                 <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                  Open the official AI Studio dashboard where Google allows developers and users to build. It is 100% free.
+                  This link goes straight to Google AI Studio’s API key dashboard — no need to hunt through menus.
                 </p>
                 <a 
-                  href="https://aistudio.google.com/" 
+                  href={GEMINI_API_KEY_URL}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-semibold text-xs mt-1.5 hover:underline"
                 >
-                  Go to Google AI Studio <ExternalLink size={12} />
+                  Get Gemini API key <ExternalLink size={12} />
                 </a>
               </div>
             </div>
@@ -79,7 +81,7 @@ export default function KeyGuidanceModal({ isOpen, onClose }: KeyGuidanceModalPr
               <div>
                 <h4 className="font-semibold text-xs sm:text-sm text-slate-800">Sign In with your Google Account</h4>
                 <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                  Log in using your existing standard Gmail / Google account. <strong>No credit cards or billing setup</strong> are required to use the free tier.
+                  Log in using your existing Gmail / Google account. <strong>No credit cards or billing setup</strong> are required to use the free tier.
                 </p>
               </div>
             </div>
@@ -89,9 +91,9 @@ export default function KeyGuidanceModal({ isOpen, onClose }: KeyGuidanceModalPr
                 3
               </div>
               <div>
-                <h4 className="font-semibold text-xs sm:text-sm text-slate-800">Click "Get API Key"</h4>
+                <h4 className="font-semibold text-xs sm:text-sm text-slate-800">Click "Create API key"</h4>
                 <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                  Locate and click the prominent blue button labeled <strong>"Get API key"</strong> or <strong>"Create API key"</strong> in the sidebar menu.
+                  Choose an existing Google Cloud project, or select <strong>"Create API key in new project"</strong>. Google will generate your key automatically.
                 </p>
               </div>
             </div>
@@ -99,18 +101,6 @@ export default function KeyGuidanceModal({ isOpen, onClose }: KeyGuidanceModalPr
             <div className="flex gap-3">
               <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] sm:text-xs flex items-center justify-center shrink-0 mt-0.5">
                 4
-              </div>
-              <div>
-                <h4 className="font-semibold text-xs sm:text-sm text-slate-800">Select "Create API key in new project"</h4>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                  Choose the option to create a key in a new project. Google will automatically provision a secure workspace space and generate your unique key.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] sm:text-xs flex items-center justify-center shrink-0 mt-0.5">
-                5
               </div>
               <div>
                 <h4 className="font-semibold text-xs sm:text-sm text-slate-800">Copy the Key & Paste in App</h4>
@@ -139,7 +129,16 @@ export default function KeyGuidanceModal({ isOpen, onClose }: KeyGuidanceModalPr
         </div>
 
         {/* Persistent Bottom Action Footer */}
-        <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/50 flex justify-end shrink-0">
+        <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-2 sm:justify-end shrink-0">
+          <a
+            href={GEMINI_API_KEY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto px-5 py-2.5 bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-semibold text-xs rounded-xl cursor-pointer transition-all flex items-center justify-center gap-1.5"
+          >
+            <ExternalLink size={13} />
+            <span>Open API key page</span>
+          </a>
           <button
             onClick={onClose}
             className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl cursor-pointer shadow-sm shadow-blue-500/10 hover:shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5"
