@@ -497,12 +497,10 @@ CRITICAL RULES:
           lastUpdated,
         };
 
-        const successText = `I have successfully added your task **"${taskDesc}"** to the Google Sheet!
-- **Date**: ${taskDate} (Column B)
-- **Time**: ${taskTime} (Column C)
-- **Description**: ${taskDesc} (Column D)
-- **Status**: ${status} (Column E)
-It is now properly positioned in the relevant columns and rows!`;
+        const successText = `I have successfully added your task: **"${taskDesc}"**!
+- **Date**: ${taskDate}
+- **Time**: ${taskTime}
+- **Status**: ${status}`;
 
         return res.json({
           text: successText,
@@ -564,7 +562,8 @@ It is now properly positioned in the relevant columns and rows!`;
 // Vite Middleware & Static Asset Routing
 async function startViteDev() {
   if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
+    const vitePkg = "vite";
+    const { createServer: createViteServer } = await import(vitePkg);
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
