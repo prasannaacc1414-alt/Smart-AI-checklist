@@ -562,8 +562,7 @@ CRITICAL RULES:
 // Vite Middleware & Static Asset Routing
 async function startViteDev() {
   if (process.env.NODE_ENV !== "production") {
-    const vitePkg = "vite";
-    const { createServer: createViteServer } = await import(vitePkg);
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
