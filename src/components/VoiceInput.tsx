@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, Mic, MicOff, AlertCircle, Sparkles, User, Bot, Loader2, Volume2, VolumeX, Key } from 'lucide-react';
 import { ChatMessage } from '../types';
 import KeyGuidanceModal from './KeyGuidanceModal';
+import FormattedChatText from './FormattedChatText';
 
 interface VoiceInputProps {
   messages: ChatMessage[];
@@ -95,10 +96,11 @@ export default function VoiceInput({
       return;
     }
 
-    // Clean markdown characters from text before speaking
+    // Clean markdown / checklist markers before speaking (keep words, drop syntax)
     const cleanText = messageText
       .replace(/[*#_`~]/g, '')
-      .replace(/\[.*?\]/g, '') // remove brackets
+      .replace(/\[([^\]]*)\]/g, '$1')
+      .replace(/^\s*[-•]\s+/gm, '')
       .trim();
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -318,10 +320,11 @@ export default function VoiceInput({
                     : 'bg-white border border-slate-150 text-slate-800 rounded-tl-none shadow-sm'
                 }`}
               >
-                {/* Process lists/paragraphs elegantly */}
-                <div className="whitespace-pre-wrap break-words prose prose-sm max-w-none">
-                  {msg.text}
-                </div>
+                {msg.role === 'model' && !msg.error ? (
+                  <FormattedChatText text={msg.text} />
+                ) : (
+                  <div className="whitespace-pre-wrap break-words">{msg.text}</div>
+                )}
                 
                 {/* Individual Speak Button for manual triggering */}
                 <div className="flex items-center justify-between gap-4 mt-2 pt-1 border-t border-slate-100/10">

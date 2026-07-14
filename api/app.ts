@@ -399,8 +399,13 @@ CRITICAL RULES:
 - Parse the relative date and time correctly. If current local time is Friday, 2026-07-10, "Tomorrow" means "2026-07-11". "10 AM" is formatted as "10:00:00".
 - Make sure to separate the core task description (e.g. "Go to the theater") from the date and time variables, and put them into the respective fields.
 - Format scheduled dates nicely (e.g. "Friday, July 10, 2026").
-- Be concise, friendly, and structured. Use Markdown bullet points, bold text, or checklists to make the list extremely readable.
-- If no tasks match, state that clearly and offer tips or ask if they'd like to add one.
+- Be concise, friendly, and structured. The chat UI renders Markdown — always use **bold** for task names/status, *italic* for soft emphasis, and - bullet lists for tasks.
+- Enrich replies with relevant emojis (do not overdo it): 📋 lists, ✅ completed, ⏳ pending, 📅 dates, ⏰ times, ✨ success, 🚨 overdue/urgent, 📌 today, 💡 tips.
+- Example style:
+  ✨ Here's your schedule for **today**:
+  - ⏰ **10:00** — *Team standup* (⏳ Pending)
+  - 📌 **14:30** — *Submit report* (⏳ Pending)
+- If no tasks match, state that clearly with a friendly emoji and offer tips or ask if they'd like to add one.
 - Do not make up any tasks that are not in the Database. Refer only to the provided tasks list.`;
 
     const aiClient = getAiClient(req);
@@ -518,12 +523,14 @@ CRITICAL RULES:
           lastUpdated,
         };
 
-        const successText = `I have successfully added your task **"${taskDesc}"** to the Google Sheet!
-- **Date**: ${taskDate} (Column B)
-- **Time**: ${taskTime} (Column C)
-- **Description**: ${taskDesc} (Column D)
-- **Status**: ${status} (Column E)
-It is now properly positioned in the relevant columns and rows!`;
+        const successText = `✨ I successfully added your task **"${taskDesc}"**!
+
+- 📅 **Date**: ${taskDate}
+- ⏰ **Time**: ${taskTime}
+- 📝 **Description**: ${taskDesc}
+- ⏳ **Status**: ${status}
+
+It's saved in your Google Sheet checklist now!`;
 
         return res.json({
           text: successText,
